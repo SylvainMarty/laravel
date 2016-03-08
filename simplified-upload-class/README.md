@@ -1,6 +1,5 @@
 # BaseUpload
-## La classe Laravel pour simplifier les imports de fichiers et leur gestion
-Cette classe est prévue pour être utilisée en tant que classe Mère afin de multiplier le nombre de configurations possibles.
+**La classe Laravel pour simplifier les imports de fichiers et leur gestion**
 
 ### Version
 1.0.0
@@ -76,6 +75,7 @@ Exemple :
     ],
 ],
 ```
+Cette classe est prévue pour être utilisée en tant que classe Mère afin de multiplier le nombre de configurations possibles.
 
 
 ### Utilisation
@@ -110,3 +110,5 @@ class UploadsController extends Controller
 
 }
 ```
+
+***D'autres cas d'utilisation à venir...***
