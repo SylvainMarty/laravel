@@ -22,14 +22,7 @@ class BaseUpload
     /**
      * Nom de l'espace de stockage
      * @var string
-     * @path WEB_ROOT/laravel/storage/$storage
-     */
-    protected $storage = 'app/';
-
-    /**
-     * Nom du dossier de stockage
-     * @var string
-     * @path WEB_ROOT/laravel/storage/app/$directory
+     * Comme enregistré dans <code>config/filesystems.php</code>
      */
     protected $directory = 'app';
 
@@ -54,8 +47,7 @@ class BaseUpload
      * @param string $pathFunction  Fonction pour obtenir le chemin d'un dossier
      * @param string $uploadPath    Chemin du dossier qui recevra les fichiers téléchargés
      */
-    public function __construct($storage = 'app/', $directory = 'app', $pathFunction = 'storage_path', $uploadPath = '') {
-        $this->setStorage($storage);
+    public function __construct($directory = 'app', $pathFunction = 'storage_path', $uploadPath = '') {
         $this->setDirectory($directory);
         $this->setPathFunction($pathFunction);
         $this->setUploadPath($uploadPath);
@@ -92,17 +84,19 @@ class BaseUpload
     }
 
     /**
-     * Dupliquer un dossier
+     * Dupliquer un dossier ou un fichier
      * @param  string $oldSlug   Slug du dossier existant
      * @param  string $newSlug   Slug du nouveau dossier
      * @return Boolean           Statut de la duplication
      */
     public function copy($oldSlug, $newSlug) {
-        if($this->isFile("/$oldSlug"))
+        if($this->isFile("/$oldSlug")) {
             return Storage::disk($this->directory)->copy("$oldSlug", "$newSlug");
-            else
-                $filesyst = new Filesystem();
-                return $filesyst->copyDirectory(storage_path("$this->storage/$this->directory")."/$oldSlug", storage_path("$this->storage/$this->directory")."/$newSlug");
+        } else {
+            $func = $this->getPathFunction();
+            $filesyst = new Filesystem();
+            return $filesyst->copyDirectory($func("$this->directory")."/$oldSlug", $func("$this->directory")."/$newSlug");
+        }
     }
 
     public function rename($oldSlug, $newSlug) {
@@ -132,10 +126,10 @@ class BaseUpload
      * @return \Symfony\Component\HttpFoundation\File\UploadedFile         L'instance UploadedFile du fichier fraîchement téléchargé
      */
     public function upload(\Symfony\Component\HttpFoundation\File\UploadedFile $file, $name = null) {
-        $func = $this->pathFunction;
+        $func = $this->getPathFunction();
         $filename = $name != null ? $name.$file->getClientOriginalExtension() : $file->getClientOriginalName();
         $this->datePathRenew();
-        return $file->move($func($this->storage.$this->directory).$this->uploadPath, $filename);
+        return $file->move($func($this->directory).$this->uploadPath, $filename);
     }
 
     /**
@@ -210,7 +204,7 @@ class BaseUpload
      */
     public function isFile($path) {
         $func = $this->pathFunction;
-        return \File::isFile($func($this->storage.$this->directory.$path));
+        return \File::isFile($func($this->directory.$path));
     }
 
     /**
@@ -241,21 +235,6 @@ class BaseUpload
 
 
 // Propriétés - Accesseurs et mutateurs
-
-    /**
-     * @return string Retourne le contenu de la propriété $storage
-     */
-    public function getStorage() {
-        return $this->storage;
-    }
-
-    /**
-     * Modifie le contenu de la propriété $storage
-     * @param string $new La nouvelle valeur de la propriété
-     */
-    public function setStorage($new) {
-        $this->storage = $new;
-    }
 
     /**
      * @return string Retourne le contenu de la propriété $directory
