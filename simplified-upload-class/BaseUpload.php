@@ -17,43 +17,55 @@ use Zipper;
 class BaseUpload
 {
 
-// Propriétés  
+// Propriétés
 
     /**
      * Nom de l'espace de stockage
      * @var string
-     * @global WEB_ROOT/laravel/storage/$storage
+     * @path WEB_ROOT/laravel/storage/$storage
      */
     protected $storage = 'app/';
 
     /**
      * Nom du dossier de stockage
      * @var string
-     * @global WEB_ROOT/laravel/storage/app/$directory
+     * @path WEB_ROOT/laravel/storage/app/$directory
      */
     protected $directory = 'app';
 
     /**
-     * Function pour obtenir le chemin d'un dossier
+     * Fonction pour obtenir le chemin d'un dossier
      * À changer si le stockage se situe dans le dossier public par exemple : 'public_path'
      * @var string
      */
     protected $pathFunction = 'storage_path';
 
     /**
-     * Génère le chemin du dossier qui recevra les fichiers téléchargés
+     * Chemin du dossier qui recevra les fichiers téléchargés
      * @var string
      */
     protected $uploadPath = '';
 
-
-
+    /**
+     * Constructeur de la classe
+     * Tous les paramètres sont facultatifs
+     * @param string $storage       Nom de l'espace de stockage
+     * @param string $directory     Nom du dossier de stockage
+     * @param string $pathFunction  Fonction pour obtenir le chemin d'un dossier
+     * @param string $uploadPath    Chemin du dossier qui recevra les fichiers téléchargés
+     */
+    public function __construct($storage = 'app/', $directory = 'app', $pathFunction = 'storage_path', $uploadPath = '') {
+        $this->setStorage($storage);
+        $this->setDirectory($directory);
+        $this->setPathFunction($pathFunction);
+        $this->setUploadPath($uploadPath);
+    }
 
 // Fichiers - Mutateurs
 
     /**
-     * Créé un nouveau dossier d'asset
-     * @param  string $slug Nom du nouvel asset
+     * Créer un nouveau dossier dans le dossier courant ($this->directory)
+     * @param  string $slug Nom du nouveau dossier
      * @return Boolean      Statut de la création
      */
     public function makeDir($slug) {
@@ -61,18 +73,18 @@ class BaseUpload
     }
 
     /**
-     * Ajoute un fichier ou un dossier au sein d'un asset
-     * @param string  $slug   L'identifiant de l'assets
+     * Créer un dossier dans d'un dossier parent
+     * @param string  $slug   Nom du dossier parent
      * @param string  $name   Le nom du nouveau fichier (avec .extension) OU le nom du dossier
      * @return boolean        true si la création a réussie, false sinon
      */
     public function add($slug, $name) {
-        return $this->hasExtension("$name") ? Storage::disk($this->directory)->put("/$slug/$name", "") : Storage::disk($this->directory)->makeDirectory("/$slug/$name");
+        return $this->hasExtension($name) ? Storage::disk($this->directory)->put("/$slug/$name", "") : Storage::disk($this->directory)->makeDirectory("/$slug/$name");
     }
 
     /**
-     * Supprime un asset
-     * @param  string $slug  identifiant de l'asset
+     * Supprimer un dossier
+     * @param  string $slug  identifiant du dossier
      * @return Boolean       Statut de la suppression
      */
     public function delete($slug) {
@@ -80,9 +92,9 @@ class BaseUpload
     }
 
     /**
-     * Duplique un asset
-     * @param  string $oldSlug   Slug de l'asset existant
-     * @param  string $newSlug   Slug du nouvel asset
+     * Dupliquer un dossier
+     * @param  string $oldSlug   Slug du dossier existant
+     * @param  string $newSlug   Slug du nouveau dossier
      * @return Boolean           Statut de la duplication
      */
     public function copy($oldSlug, $newSlug) {
@@ -158,8 +170,8 @@ class BaseUpload
     }
 
     /**
-     * Retourne les assets installé sur un seul niveau d'arborescence
-     * @return array La liste des assets installés
+     * Retourne les dossiers installé sur un seul niveau d'arborescence
+     * @return array La liste des dossiers installés
      */
     public function nonRecursivesDirectories() {
         return Storage::disk($this->directory)->directories();
@@ -175,7 +187,7 @@ class BaseUpload
 
     /**
      * Liste tous les fichiers que contient un dossier
-     * @param  string $path     Le nom du dossier de l'assets dans lequel lister les fichiers
+     * @param  string $path     Le nom du dossier du dossiers dans lequel lister les fichiers
      * @return array            Le tableau contenant les différents fichiers
      */
     public function listAllFilesFromDirectory($path) {
@@ -183,7 +195,7 @@ class BaseUpload
     }
 
     /**
-     * Retourne le type MIME du fichier
+     * Retourner le type MIME du fichier
      * @param  string $ext       Chemin relatif vers le fichier (à partir du dossier current du document)
      * @return string|false      Le type MIME du fichier
      */
