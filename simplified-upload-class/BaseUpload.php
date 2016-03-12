@@ -128,8 +128,20 @@ class BaseUpload
     public function upload(\Symfony\Component\HttpFoundation\File\UploadedFile $file, $name = null) {
         $func = $this->getPathFunction();
         $filename = $name != null ? $name.$file->getClientOriginalExtension() : $file->getClientOriginalName();
-        $this->datePathRenew();
         return $file->move($func($this->directory).$this->uploadPath, $filename);
+    }
+
+    /**
+     * Télécharge et archive un fichier par date : /YYYY/MM/filename.extension
+     * @param  \Symfony\Component\HttpFoundation\File\UploadedFile $file   L'instance de la classe UploadedFile, suite de la séquence Request::file('name')
+     * @param  string                                              $name   Nouveau nom du fichier (FACULTATIF)
+     * @return \Symfony\Component\HttpFoundation\File\UploadedFile         L'instance UploadedFile du fichier fraîchement téléchargé
+     */
+    public function record(\Symfony\Component\HttpFoundation\File\UploadedFile $file, $name = null) {
+        $func = $this->getPathFunction();
+        $filename = $name != null ? $name.$file->getClientOriginalExtension() : $file->getClientOriginalName();
+        $recordsPath = $this->getDatePathRefreshed();
+        return $file->move($func($this->directory).$this->uploadPath.$recordsPath, $filename);
     }
 
     /**
@@ -143,11 +155,11 @@ class BaseUpload
     }
 
     /**
-     * Renouvelle le chemin d'enregistrement des fichiers uploadés
+     * Renouvelle le chemin d'enregistrement des fichiers uploadés. Utile pour l'archivage.
      * @return string Le nouveau chemin d'enregistrement des images
      */
-    public function datePathRenew() {
-        $this->uploadPath = '/'.Carbon::now()->format('Y').'/'.Carbon::now()->format('m').'/';
+    public function getDatePathRefreshed() {
+        return '/'.Carbon::now()->format('Y').'/'.Carbon::now()->format('m').'/';
     }
 
 
